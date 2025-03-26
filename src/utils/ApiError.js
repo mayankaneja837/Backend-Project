@@ -1,4 +1,3 @@
-import { time } from "console"
 
 class ApiError extends Error{
     constructor(
@@ -8,7 +7,7 @@ class ApiError extends Error{
         stack=[]
     ){
         super(message)
-        this.statuscode
+        this.statuscode=statuscode
         this.data=null
         this.message=message
         this.success=false
