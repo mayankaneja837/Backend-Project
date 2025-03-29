@@ -12,9 +12,7 @@ cloudinary.config({
 const uploadonCloudinary=async (localfilePath)=>{
     try{
         if(!localfilePath) return null
-        console.log("Checking file existence: ",localfilePath)
 
-        console.log(fs.existsSync(localfilePath))
         if(!fs.existsSync(localfilePath)){
             console.log("File does not exist at:",localfilePath)
         }
