@@ -4,15 +4,17 @@ import { User } from "../models/user.model.js";
 import {uploadonCloudinary} from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
 
-const generateAccessAndRefreshToekn=async(userId)=>{
+const generateAccessAndRefreshToken=async(userId)=>{
   try{
-    const user=await User.findById({
-      userId
-    })
-    const accessToken=user.generateAccessToken
-    const refreshToken=user.generateRefreshToken
+    const user=await User.findById(userId)
+    
+    
+    const accessToken=user.generateAccessToken()
+    const refreshToken=user.generateRefreshToken()
+
 
     user.refreshToken=refreshToken
+
     await user.save({validateBeforeSave:false})
 
     return {accessToken,refreshToken}
@@ -103,7 +105,7 @@ const loginUser=asyncHandler(async(req,res)=>{
     throw new ApiError(401,"Password is not correct")
   }
 
-  const {accessToken,refreshToken}=await generateAccessAndRefreshToekn(user._id)
+  const {accessToken,refreshToken}=await generateAccessAndRefreshToken(user._id)
 
   const loggedInUser=await User.findById(user._id).select("-password -refreshToken")
 
@@ -112,12 +114,13 @@ const loginUser=asyncHandler(async(req,res)=>{
     secure:true
   }
 
+  console.log(loggedInUser)
   return res.status(200).cookie("accessToken",accessToken,options).cookie("refreshToken",refreshToken,options)
   .json(
     new ApiResponse(200,{
       user:loggedInUser,refreshToken,accessToken
     },
-  message="User logged in successfully")
+  "User logged in successfully")
   )
 
 
@@ -125,8 +128,8 @@ const loginUser=asyncHandler(async(req,res)=>{
 
 const logOutuser=asyncHandler(async(req,res)=>{
   await User.findByIdAndUpdate(req.user._id,{
-    $set:{
-      refreshToken:undefined
+    $unset:{
+      refreshToken:1
     },
   },{
     new:true
