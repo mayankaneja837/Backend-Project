@@ -73,7 +73,7 @@ const registerUser = asyncHandler(async (req, res) => {
   )
   
   if(!createdUser){
-    throw new ApiError(500,"Something went wrong while registering a user")
+    throw new ApiError(500,"Something went wrong while finding a user")
   }
   
   return res.status(201).json(
@@ -94,7 +94,7 @@ const loginUser=asyncHandler(async(req,res)=>{
   })
 
   if(!user){
-    throw new ApiError(404,"User does not exist")
+    throw new ApiError(404,"User with this username or email  does not exist")
   }
 
   const isPasswordValid=await user.isPasswordCorrect(password)
