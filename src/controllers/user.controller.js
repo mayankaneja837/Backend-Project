@@ -5,6 +5,7 @@ import {uploadonCloudinary} from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken"
 import { Mail } from "lucide-react";
+import mongoose from "mongoose";
 
 const generateAccessAndRefreshToken=async(userId)=>{
   try{
@@ -357,8 +358,52 @@ const getUserChannelProfile=asyncHandler(async (req,res)=>{
 
 const getUserWatchHistory=asyncHandler(async (req,res)=>{
 
+  const watchHistory=await User.aggregate([
+    {
+      $match:{
+       _id:new mongoose.Types.ObjectId(req.user?._id)
+      }
+    },{
+      $lookup:{
+        from:"videos",
+        localField:"watchHistory",
+        foreignField:"_id",
+        as:"WatchHistory",
+        pipeline:[
+          {
+            $lookup:{
+              from:"users",
+              localField:"owner",
+              foreignField:"_id",
+              as:"owner",
+              pipeline:[
+                {
+                  $project:{
+                    fullName:1,
+                    username:1,
+                    avatar:1
+                  }
+                }
+              ]
+            }
+          },{
+            $addFields:{
+              owner:{
+                $first:"$owner"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ])
+
+  return res.status(200)
+  .json(
+    new ApiResponse(200,watchHistory[0].watchHistory,"watch history fetched successfully")
+  )
 })
 
 export { registerUser,loginUser,logOutuser,refreshAccessToken,changeCurrentUserPassword,getCurrentUser,updateAccountDetails,
-  updateUserAvatar,updateUserCoverImage,getUserChannelProfile
+  updateUserAvatar,updateUserCoverImage,getUserChannelProfile,getUserWatchHistory
  };
