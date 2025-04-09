@@ -4,7 +4,6 @@ import { User } from "../models/user.model.js";
 import {uploadonCloudinary} from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken"
-import { Mail } from "lucide-react";
 import mongoose from "mongoose";
 
 const generateAccessAndRefreshToken=async(userId)=>{
