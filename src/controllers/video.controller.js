@@ -111,9 +111,42 @@ const updateVideo=asyncHandler(async(req,res)=>{
     )
 })
 
+const deleteVideo=asyncHandler(async(req,res)=>{
+    const {videoId}=req.params
+    if(!videoId){
+        throw new ApiError(401,"Video id not found")
+    }
+
+    const deleted=await Video.findByIdAndUpdate(videoId,{
+        $unset:{
+            videoFile:1
+        },    
+    },{
+        new:true
+    }).select("-thumbnail -owner")
+
+    if(!deleted){
+        throw new ApiError(401,"Error while deleting the video from the database")
+    }
+
+    res.status(201).json(
+        new ApiResponse(201,{},"Video Deleted successfully")
+    )
+})
+
+const getAllVideos=asyncHandler(async(req,res)=>{
+    const {page=1, limit=10,query,sortBy,sortType,userId}= req.params
+    // Have to add pagination
+})
+
+const togglePublishStatus=asyncHandler(async(req,res)=>{
+    const {videoId}=req.params
+    // have to do
+})
 
 export {
 publishAVideo, 
 getVideoById,
-updateVideo
+updateVideo,
+deleteVideo
 }
