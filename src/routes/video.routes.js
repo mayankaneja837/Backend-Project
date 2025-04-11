@@ -19,5 +19,5 @@ router.route("/publish").post(verifyJWT,
 
 router.route("/get/:id").get(verifyJWT,getVideoById)
 
-router,route("/update").post(verifyJWT,upload.single("thumbnail"),updateVideo)
+router.route("/update").post(verifyJWT,upload.single("thumbnail"),updateVideo)
 export default router
