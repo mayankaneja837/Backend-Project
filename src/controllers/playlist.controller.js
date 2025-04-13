@@ -32,16 +32,17 @@ const userPlaylist=asyncHandler(async(req,res)=>{
     }
 
     const playlist=await Playlist.find({owner:userId})
-    if(!playlist){
+    if(!playlist || playlist.length==0){
         throw new ApiError(401,"Playlist doesnt exist with the given UserId")
     }
 
+    const allVideos=playlist.flatMap(p=>p.videos)
     res.status(201).json(
-        new ApiResponse(201,playlist.videos,"User playlist fetched successfully")
+        new ApiResponse(201,allVideos,"User playlist fetched successfully")
     )
 })
 
-const getplaylistId=asyncHandler(async(req,res)=>{
+const getplaylistById=asyncHandler(async(req,res)=>{
     const {playlistId}=req.params
     if(!playlistId){
         throw new ApiError(401,"Playlist Id doesn't exist")
@@ -116,17 +117,50 @@ const deletePlaylist=asyncHandler(async(req,res)=>{
     if(!playlistId){
         throw new ApiError(401,"PlaylistId field is empty")
     }
-    await Playlist.findByIdAndDelete(playlistId)
+    const deletedPlaylist=await Playlist.findByIdAndDelete(playlistId)
+    if(!deletedPlaylist){
+        throw new ApiError(404,"Playlist with the given Id does not exist")
+    }
 
     res.status(200).json(
         new ApiResponse(200,{},"Playlist deleted successfully")
     )
 })
+
+const updatePlaylist=asyncHandler(async(req,res)=>{
+    const {playlistId}=req.params
+    const {name,description}=req.body
+
+    if(!playlistId){
+        throw new ApiError(401,"Playlist Id is a required field")
+    }
+
+    if(!mongoose.Types.ObjectId.isValid(playlistId)){
+        throw new ApiError(400,"Playlist Id is not valid")
+    }
+    const updatedPlaylist=await Playlist.findByIdAndUpdate(playlistId,{
+        $set:{
+            ...(name && {name}),
+            ...(description && {description})
+        }
+    },{
+        new:true
+    }).select("-videos -owner")
+
+    if(!updatedPlaylist){
+        throw new ApiError(401,"error while updating the playlist")
+    }
+
+    res.status(200).json(
+        new ApiResponse(200,updatedPlaylist,"Playlist updated successfully")
+    )
+})
 export {
     createPlaylist,
     userPlaylist,
-    getplaylistId,
+    getplaylistById,
     addVideoToPlaylist,
     removeVideoFromPlaylist,
-    deletePlaylist
+    deletePlaylist,
+    updatePlaylist
 }
